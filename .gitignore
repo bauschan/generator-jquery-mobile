@@ -1,0 +1,9 @@
+node_modules
+test/temp
+
+
+/.DS_Store
+/test/.DS_Store
+/app/templates/app/scripts/libs/.DS_Store
+/app/templates/app/scripts/.DS_Store
+/app/templates/app/.DS_Store
