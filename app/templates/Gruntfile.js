@@ -1,18 +1,10 @@
-'use strict';
-var lrSnippet = require('grunt-contrib-livereload/lib/utils').livereloadSnippet;
-var mountFolder = function (connect, dir) {
-    return connect.static(require('path').resolve(dir));
-};
+// Generated on <%%= (new Date).toISOString().split('T')[0] %> using <%%= pkg.name %> <%%= pkg.version %>
 
-// # Globbing
-// for performance reasons we're only matching one level down:
-// 'test/spec/{,*/}*.js'
-// use this if you want to match all subfolders:
-// 'test/spec/**/*.js'
+'use strict';
 
 module.exports = function (grunt) {
-    // load all grunt tasks
-    require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+    require('time-grunt')(grunt);
+    require('load-grunt-tasks')(grunt);
 
     // configurable paths
     var yeomanConfig = {
@@ -31,18 +23,16 @@ module.exports = function (grunt) {
                 files: ['test/spec/{,*/}*.coffee'],
                 tasks: ['coffee:test']
             },
-            compass: {
-                files: ['<%%= yeoman.app %>/styles/{,*/}*.{scss,sass}'],
-                tasks: ['compass']
-            },
             livereload: {
+                options: {
+                    livereload: '<%%= connect.options.livereload %>'
+                },
                 files: [
                     '<%%= yeoman.app %>/*.html',
-                    '{.tmp,<%%= yeoman.app %>}/styles/{,*/}*.css',
+                    '.tmp/styles/{,*/}*.css',
                     '{.tmp,<%%= yeoman.app %>}/scripts/{,*/}*.js',
-                    '<%%= yeoman.app %>/images/{,*/}*.{png,jpg,jpeg,gif,webp}'
-                ],
-                tasks: ['livereload']
+                    '<%%= yeoman.app %>/images/{,*/}*.{gif,jpeg,jpg,png,svg,webp}'
+                ]
             }
         },
         connect: {
@@ -53,38 +43,28 @@ module.exports = function (grunt) {
             },
             livereload: {
                 options: {
-                    middleware: function (connect) {
-                        return [
-                            lrSnippet,
-                            mountFolder(connect, '.tmp'),
-                            mountFolder(connect, 'app')
-                        ];
-                    }
+                    open: true,
+                    base: [
+                        '.tmp',
+                        '<%%= yeoman.app %>'
+                    ]
                 }
             },
             test: {
                 options: {
-                    middleware: function (connect) {
-                        return [
-                            mountFolder(connect, '.tmp'),
-                            mountFolder(connect, 'test')
-                        ];
-                    }
+                    base: [
+                        '.tmp',
+                        'test',
+                        '<%%= yeoman.app %>'
+                    ]
                 }
             },
             dist: {
                 options: {
-                    middleware: function (connect) {
-                        return [
-                            mountFolder(connect, 'dist')
-                        ];
-                    }
+                    open: true,
+                    base: '<%%= yeoman.dist %>',
+                    livereload: false
                 }
-            }
-        },
-        open: {
-            server: {
-                path: 'http://localhost:<%%= connect.options.port %>'
             }
         },
         clean: {
@@ -108,7 +88,7 @@ module.exports = function (grunt) {
             all: {
                 options: {
                     run: true,
-                    urls: ['http://localhost:<%%= connect.options.port %>/index.html']
+                    urls: ['http://<%%= connect.test.options.hostname %>:<%%= connect.test.options.port %>/index.html']
                 }
             }
         },
@@ -133,27 +113,6 @@ module.exports = function (grunt) {
                 }]
             }
         },
-        compass: {
-            options: {
-                cssDir: '.tmp/styles',
-                sassDir: '<%%= yeoman.app %>/styles',
-                imagesDir: '<%%= yeoman.app %>/images',
-                javascriptsDir: '.tmp/scripts',
-                relativeAssets: true,
-                force: true
-            },
-            dist: {},
-            server: {
-                options: {
-                    debugInfo: true
-                }
-            }
-        },
-        // not used since Uglify task does concat,
-        // but still available if needed
-        /*concat: {
-            dist: {}
-        },*/
         requirejs: {
             dist: {
                 // Options: https://github.com/jrburke/r.js/blob/master/build/example.build.js
@@ -245,28 +204,28 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.renameTask('regarde', 'watch');
 
-    grunt.registerTask('server', function (target) {
+    grunt.registerTask('serve', function (target) {
         if (target === 'dist') {
-            return grunt.task.run(['build', 'open', 'connect:dist:keepalive']);
+            return grunt.task.run(['build', 'connect:dist:keepalive']);
         }
 
         grunt.task.run([
             'clean:server',
             'coffee:dist',
-            'compass:server',
-            'livereload-start',
             'connect:livereload',
-            'open',
             'watch'
         ]);
+    });
+
+    grunt.registerTask('server', function () {
+      grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
+      grunt.task.run(['serve']);
     });
 
     grunt.registerTask('test', [
         'clean:server',
         'coffee',
-        'compass',
         'connect:test',
         'mocha'
     ]);
@@ -274,7 +233,6 @@ module.exports = function (grunt) {
     grunt.registerTask('build', [
         'clean:dist',
         'coffee',
-        'compass:dist',
         'useminPrepare',
         'requirejs',
         'imagemin',
