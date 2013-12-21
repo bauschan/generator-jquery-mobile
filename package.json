@@ -1,6 +1,6 @@
 {
   "name": "generator-jquery-mobile",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Yeoman generator for jQuery Mobile Framework",
   "keywords": [
     "yeoman-generator",
